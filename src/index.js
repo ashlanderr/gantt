@@ -105,9 +105,10 @@ export default class Gantt {
 
             // cache index
             task._index = i;
+            task._row_index = i;
             if (typeof task.custom_index === 'number') {
-                task._index = task.custom_index;
-                }
+                task._row_index = task.custom_index;
+            }
             // invalid dates
             if (!task.start && !task.end) {
                 const today = date_utils.today();
@@ -154,6 +155,8 @@ export default class Gantt {
 
             return task;
         });
+
+        this.row_count = Math.max(...this.tasks.map(t => t._row_index)) + 1;
 
         this.setup_dependencies();
     }
@@ -309,7 +312,7 @@ export default class Gantt {
             this.options.header_height +
             this.options.padding +
             (this.options.bar_height + this.options.padding) *
-                this.tasks.length;
+                this.row_count;
 
         createSVG('rect', {
             x: 0,
@@ -335,7 +338,7 @@ export default class Gantt {
 
         let row_y = this.options.header_height + this.options.padding / 2;
 
-        for (let task of this.tasks) {
+        for (let r = 0; r < this.row_count; ++r) {
             createSVG('rect', {
                 x: 0,
                 y: row_y,
@@ -376,7 +379,7 @@ export default class Gantt {
         let tick_y = this.options.header_height + this.options.padding / 2;
         let tick_height =
             (this.options.bar_height + this.options.padding) *
-            this.tasks.length;
+            this.row_count;
 
         for (let date of this.dates) {
             let tick_class = 'tick';
@@ -426,7 +429,7 @@ export default class Gantt {
             const width = this.options.column_width;
             const height =
                 (this.options.bar_height + this.options.padding) *
-                    this.tasks.length +
+                    this.row_count +
                 this.options.header_height +
                 this.options.padding / 2;
 

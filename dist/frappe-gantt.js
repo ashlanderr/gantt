@@ -778,7 +778,7 @@ class Bar {
         return (
             this.gantt.options.header_height +
             this.gantt.options.padding +
-            this.task._index * (this.height + this.gantt.options.padding)
+            this.task._row_index * (this.height + this.gantt.options.padding)
         );
     }
 
@@ -1109,7 +1109,7 @@ class Gantt {
             date_format: 'YYYY-MM-DD',
             popup_trigger: 'click',
             custom_popup_html: null,
-            language: 'en'
+            language: 'ru'
         };
         this.options = Object.assign({}, default_options, options);
     }
@@ -1128,7 +1128,10 @@ class Gantt {
 
             // cache index
             task._index = i;
-
+            task._row_index = i;
+            if (typeof task.custom_index === 'number') {
+                task._row_index = task.custom_index;
+            }
             // invalid dates
             if (!task.start && !task.end) {
                 const today = date_utils.today();
@@ -1175,6 +1178,8 @@ class Gantt {
 
             return task;
         });
+
+        this.row_count = Math.max(...this.tasks.map(t => t._row_index)) + 1;
 
         this.setup_dependencies();
     }
@@ -1330,7 +1335,7 @@ class Gantt {
             this.options.header_height +
             this.options.padding +
             (this.options.bar_height + this.options.padding) *
-                this.tasks.length;
+                this.row_count;
 
         createSVG('rect', {
             x: 0,
@@ -1356,7 +1361,7 @@ class Gantt {
 
         let row_y = this.options.header_height + this.options.padding / 2;
 
-        for (let task of this.tasks) {
+        for (let r = 0; r < this.row_count; ++r) {
             createSVG('rect', {
                 x: 0,
                 y: row_y,
@@ -1397,7 +1402,7 @@ class Gantt {
         let tick_y = this.options.header_height + this.options.padding / 2;
         let tick_height =
             (this.options.bar_height + this.options.padding) *
-            this.tasks.length;
+            this.row_count;
 
         for (let date of this.dates) {
             let tick_class = 'tick';
@@ -1447,7 +1452,7 @@ class Gantt {
             const width = this.options.column_width;
             const height =
                 (this.options.bar_height + this.options.padding) *
-                    this.tasks.length +
+                    this.row_count +
                 this.options.header_height +
                 this.options.padding / 2;
 
